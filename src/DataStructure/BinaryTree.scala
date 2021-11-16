@@ -9,6 +9,16 @@ class BinaryTree[Type](private var comparator: Traits.Comparator) {
     private var leftChild : Node = null
     private var rightChild : Node = null
 
+    def <(anotherNode: Node): Boolean = {
+      if (comparator.compare(this.value, anotherNode.value) < 0) return true
+      false
+    }
+
+    def >(anotherNode: Node): Boolean = {
+      if (comparator.compare(this.value, anotherNode.value) > 0) return true
+      false
+    }
+
     def getValue = this.value // Геттер
     def setValue (newValue: Type) : Unit = { // Сеттер
       this.value = newValue
@@ -47,19 +57,21 @@ class BinaryTree[Type](private var comparator: Traits.Comparator) {
   private var root: Node = null
 
   def add (value: Type): Unit = {
+    var newNode = new Node(value)
+
     if (root == null) root = new Node(value)
     else if (findByValue(value) == null) {
       root.setWeight(root.getWeight + 1)
       var currentNode = root
 
       while (true) {
-        if (comparator.compare(value, currentNode.getValue) < 0) { // Двигаемся влево
+        if (newNode < currentNode) { // Двигаемся влево
           if (currentNode.getLeftChild != null) {
             currentNode = currentNode.getLeftChild
             currentNode.setWeight(currentNode.getWeight + 1)
           }
           else {
-            currentNode.setLeftChild(new Node(value))
+            currentNode.setLeftChild(newNode)
             currentNode.getLeftChild.setParent(currentNode)
             return
           }
@@ -70,7 +82,7 @@ class BinaryTree[Type](private var comparator: Traits.Comparator) {
             currentNode.setWeight(currentNode.getWeight + 1)
           }
           else {
-            currentNode.setRightChild(new Node(value))
+            currentNode.setRightChild(newNode)
             currentNode.getRightChild.setParent(currentNode)
             return None
           }
@@ -167,12 +179,15 @@ class BinaryTree[Type](private var comparator: Traits.Comparator) {
 
   def findByValue(value: Type): Node = {
     var currentNode = root
+    val nodeToFind = new Node(value)
+
     while (comparator.compare(value, currentNode.getValue) != 0) {
-      if (comparator.compare(value, currentNode.getValue) < 0) currentNode = currentNode.getLeftChild
+      if (nodeToFind < currentNode) currentNode = currentNode.getLeftChild
       else currentNode = currentNode.getRightChild
 
       if (currentNode == null) return null
     }
+
     currentNode
   }
 
@@ -267,7 +282,7 @@ class BinaryTree[Type](private var comparator: Traits.Comparator) {
 
   def forEach(action: Traits.Action[Node]) : Unit = {
     var nextNode: Node = null
-    var currentNodeValue: Any = null
+    var currentNode: Node = null
     var size = this.size
     var foundFirstNode = false
 
@@ -276,10 +291,11 @@ class BinaryTree[Type](private var comparator: Traits.Comparator) {
         foundFirstNode = true
         nextNode = findByIndex(0)
 
-        action.doThis(nextNode)
+        action.doWith(nextNode)
       }
       else {
-        currentNodeValue = nextNode.getValue
+        currentNode = nextNode
+
         // Если есть правый потомок, тогда либо он,
         // либо последний его левый потомок будет следующим узлом
         if (nextNode.getRightChild != null) {
@@ -287,18 +303,22 @@ class BinaryTree[Type](private var comparator: Traits.Comparator) {
           while (nextNode.getLeftChild != null) {
             nextNode = nextNode.getLeftChild
           }
-          if (comparator.compare(currentNodeValue, nextNode.getValue) < 0)
-            action.doThis(nextNode)
+
+          //if (comparator.compare(currentNodeValue, nextNode.getValue) < 0)
+          if (currentNode < nextNode)
+            action.doWith(nextNode)
         }
-        else if (nextNode.getParent != null) { // Иначе поднимаемся по родителям пока не найдем узел с бОльшим значением
-          breakable(while (comparator.compare(currentNodeValue, nextNode.getParent.getValue) > 0) {
+        else if (nextNode.getParent != null) { // Иначе поднимаемся по родителям пока не найдем узел с бо'льшим значением
+          //breakable(while (comparator.compare(currentNodeValue, nextNode.getParent.getValue) > 0) {
+          breakable(while (currentNode > nextNode.getParent) {
             nextNode = nextNode.getParent
             if (nextNode.getParent == null) break
           })
           if (nextNode.getParent != null) {
-            if (comparator.compare(currentNodeValue, nextNode.getParent.getValue) < 0) {
+            //if (comparator.compare(currentNodeValue, nextNode.getParent.getValue) < 0) {
+            if (currentNode < nextNode.getParent) {
               nextNode = nextNode.getParent
-              action.doThis(nextNode)
+              action.doWith(nextNode)
             }
           }
         }

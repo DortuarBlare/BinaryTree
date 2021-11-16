@@ -1,5 +1,5 @@
 package Traits
 
 trait Action[Type] {
-  def doThis(someObject: Type): Unit
+  def doWith(someObject: Type): Unit
 }
