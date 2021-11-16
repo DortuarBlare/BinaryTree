@@ -60,6 +60,4 @@ object Main extends App {
   timeTesting(binaryTree, 1000)
   timeTesting(binaryTree, 5000)
   timeTesting(binaryTree, 10000)
-  timeTesting(binaryTree, 25000)
-  timeTesting(binaryTree, 50000)
 }
